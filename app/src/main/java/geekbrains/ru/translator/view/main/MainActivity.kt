@@ -1,22 +1,29 @@
 package geekbrains.ru.translator.view.main
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
+import com.google.android.material.textfield.TextInputLayout
 import geekbrains.ru.translator.R
 import geekbrains.ru.translator.model.data.AppState
 import geekbrains.ru.translator.model.data.DataModel
 import geekbrains.ru.translator.utils.convertMeaningsToString
+import geekbrains.ru.translator.utils.getStringFromEditable
 import geekbrains.ru.translator.utils.network.isOnline
 import geekbrains.ru.translator.view.base.BaseActivity
 import geekbrains.ru.translator.view.descriptionscreen.DescriptionActivity
 import geekbrains.ru.translator.view.history.HistoryActivity
 import geekbrains.ru.translator.view.main.adapter.MainAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.search_dialog_fragment.*
 import org.koin.android.viewmodel.ext.android.viewModel
+
 
 private const val BOTTOM_SHEET_FRAGMENT_DIALOG_TAG = "74a54328-5d62-46bf-ab6b-cbf5fgt0-092395"
 
@@ -77,6 +84,10 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
                 startActivity(Intent(this, HistoryActivity::class.java))
                 true
             }
+            R.id.menu_history_room -> {
+                showAlertWithTextInputLayout(this@MainActivity)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -93,5 +104,32 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
     private fun initViews() {
         search_fab.setOnClickListener(fabClickListener)
         main_activity_recyclerview.adapter = adapter
+    }
+
+    private fun showAlertWithTextInputLayout(context: Context) {
+        val textInputLayout = TextInputLayout(context)
+        textInputLayout.setPadding(
+            resources.getDimensionPixelOffset(R.dimen.dp_19),0,
+            resources.getDimensionPixelOffset(R.dimen.dp_19),0
+        )
+        val input = EditText(context)
+        textInputLayout.hint = "Word for search"
+        textInputLayout.addView(input)
+
+        val alert = AlertDialog.Builder(context)
+            .setTitle("Local Search")
+            .setView(textInputLayout)
+            .setMessage("Please enter word")
+            .setPositiveButton("Search") { dialog, _ ->
+                // input.text.toString() все ломает
+                startActivity(
+                    HistoryActivity.getIntent(this, getStringFromEditable(input.text)))
+                dialog.cancel()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.cancel()
+            }.create()
+
+        alert.show()
     }
 }

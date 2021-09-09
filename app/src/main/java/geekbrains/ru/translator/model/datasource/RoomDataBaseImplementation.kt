@@ -10,7 +10,11 @@ class RoomDataBaseImplementation(private val historyDao: HistoryDao) :
     DataSourceLocal<List<DataModel>> {
 
     override suspend fun getData(word: String): List<DataModel> {
-        return mapHistoryEntityToSearchResult(historyDao.all())
+        if (word.isNullOrEmpty()) {
+            return mapHistoryEntityToSearchResult(historyDao.all())
+        } else {
+            return mapHistoryEntityToSearchResult(historyDao.getDataByWord(word))
+        }
     }
 
     override suspend fun saveToDB(appState: AppState) {
